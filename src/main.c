@@ -16,6 +16,12 @@ const char *PORT = "5757";
 const int CRV_OK = 1;
 const int CRV_ERR = -1;
 
+void *get_in_addr(struct sockaddr *sa) {
+     return sa->sa_family == AF_INET
+            ? (void *) &(((struct sockaddr_in*)sa)->sin_addr)
+                : (void *) &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
 int crv_get_socket(struct addrinfo hints, struct addrinfo *res, int *socket_fd) {
    struct addrinfo *p;
    int get_addrinfo_status, socket_res;
@@ -55,9 +61,11 @@ int crv_get_socket(struct addrinfo hints, struct addrinfo *res, int *socket_fd) 
 }
 
 int main() {
-   struct addrinfo hints;
-   struct addrinfo *serv_info;
-   int socket_fd, socket_res;
+   struct addrinfo hints, *serv_info;
+   int socket_fd, socket_res, conn_fd;
+   struct sockaddr_storage client_addr;
+   socklen_t addr_size;
+   char s[INET6_ADDRSTRLEN];
 
    // Ensure hints is 0'd
    memset(&hints, 0, sizeof hints); 
@@ -78,13 +86,39 @@ int main() {
       exit(1);
    }
 
-   printf("socket: %d", socket_fd);
+   printf("server waiting for connections...\n");
 
+   addr_size = sizeof client_addr;
 
-   // getaddrinfo to find a socket
-   // socket to build the socket
-   // bind to bind
-   // listen
+   while (1) {
+      conn_fd = accept(socket_fd, (struct sockaddr *)&client_addr, &addr_size);
+      if (conn_fd == -1) {
+         printf("accept() error");
+         continue;
+      }
+
+      inet_ntop(client_addr.ss_family,
+            get_in_addr((struct sockaddr*) &client_addr),
+            s, sizeof s
+      );
+
+      printf("server got connection from: %s\n", s);
+
+      if (!fork()) {
+         close(socket_fd);
+
+         if (send(conn_fd, "hello world", 11, 0) == -1) {
+            printf("send() error");
+         }
+
+         close(conn_fd);
+         exit(0);
+      }
+
+      // Main server loop doesn't need this
+      close(conn_fd);
+   }
 
    return 0;
 }
+
