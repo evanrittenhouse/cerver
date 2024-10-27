@@ -4,6 +4,11 @@ CFLAGS=-I.
 %.o: %.c 
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-hellomake: src/main.c
+run: src/main.c
+	@echo "building"
 	$(CC) -o build/main src/main.c
 	./build/main
+
+.PHONY: clean
+clean:
+	rm -rf build/*

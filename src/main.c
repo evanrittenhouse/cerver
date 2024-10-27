@@ -12,14 +12,15 @@
  #include <signal.h>
 
 const char *PORT = "5757";
+const int BACKLOG_CONNECTIONS = 10;
 
 const int CRV_OK = 1;
 const int CRV_ERR = -1;
 
 void *get_in_addr(struct sockaddr *sa) {
-     return sa->sa_family == AF_INET
-            ? (void *) &(((struct sockaddr_in*)sa)->sin_addr)
-                : (void *) &(((struct sockaddr_in6*)sa)->sin6_addr);
+   return sa->sa_family == AF_INET
+      ? (void *) &(((struct sockaddr_in*)sa)->sin_addr)
+      : (void *) &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
 int crv_get_socket(struct addrinfo hints, struct addrinfo *res, int *socket_fd) {
@@ -81,7 +82,7 @@ int main() {
       exit(1);
    }
 
-   if (listen(socket_fd, 10) == -1) {
+   if (listen(socket_fd, BACKLOG_CONNECTIONS) == -1) {
       printf("listen");
       exit(1);
    }
