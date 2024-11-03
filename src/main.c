@@ -1,27 +1,16 @@
- #include <stdio.h>
- #include <stdlib.h>
- #include <unistd.h>
- #include <errno.h>
- #include <string.h>
- #include <sys/types.h>
- #include <sys/socket.h>
- #include <netinet/in.h>
- #include <netdb.h>
- #include <arpa/inet.h>
- #include <sys/wait.h>
- #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/wait.h>
+#include <signal.h>
 
-const char *PORT = "5757";
-const int BACKLOG_CONNECTIONS = 10;
-
-const int CRV_OK = 1;
-const int CRV_ERR = -1;
-
-void *get_in_addr(struct sockaddr *sa) {
-   return sa->sa_family == AF_INET
-      ? (void *) &(((struct sockaddr_in*)sa)->sin_addr)
-      : (void *) &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
+#include "util.h"
 
 int crv_get_socket(struct addrinfo hints, struct addrinfo *res, int *socket_fd) {
    struct addrinfo *p;
